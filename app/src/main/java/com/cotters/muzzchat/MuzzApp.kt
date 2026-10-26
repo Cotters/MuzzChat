@@ -36,8 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun MuzzApp(viewModel: ChatViewModel) {
 
-    val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
-    val messages by viewModel.messages.collectAsStateWithLifecycle()
+    val viewState by viewModel.viewState.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -53,7 +52,7 @@ fun MuzzApp(viewModel: ChatViewModel) {
                             contentDescription = null,
                             modifier = Modifier.size(50.dp)
                         )
-                        Text(currentUser.switched().name)
+                        Text(viewState.recipient.name)
                     }
                 },
                 actions = {
@@ -75,7 +74,7 @@ fun MuzzApp(viewModel: ChatViewModel) {
                     .fillMaxWidth()
                     .weight(1f)
             ) {
-                items(messages) { message ->
+                items(viewState.messages) { message ->
                     MessageBubble(
                         content = message.content
                     )

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import java.util.Random
 
 enum class User {
@@ -17,27 +18,36 @@ enum class User {
     }
 }
 
+data class ChatViewState(
+    val currentUser: User,
+    val messages: List<ChatMessage>,
+) {
+    val recipient: User
+        get() = currentUser.switched()
+}
 
 class ChatViewModel : ViewModel() {
 
-    private val _currentUser: MutableStateFlow<User> = MutableStateFlow(User.John)
-    val currentUser: StateFlow<User> = _currentUser.asStateFlow()
-
-    val messages: StateFlow<List<ChatMessage>> = MutableStateFlow(
-        listOf(
-            ChatMessage(content = "Hi John", senderId = "Sarah", isOutgoing = false, timestamp = 0L),
-            ChatMessage(
-                content = "Let's do Tuesday. What time?",
-                senderId = "Sarah",
-                isOutgoing = false,
-                timestamp = 0L
-            ),
-            ChatMessage(content = "Tuesday works. 3pm ok?", senderId = "John", isOutgoing = true, timestamp = 0L),
+    private val _viewState: MutableStateFlow<ChatViewState> = MutableStateFlow(
+        ChatViewState(
+            currentUser = User.John, messages = listOf(
+                ChatMessage(content = "Hi John", senderId = "Sarah", isOutgoing = false, timestamp = 0L),
+                ChatMessage(
+                    content = "Let's do Tuesday. What time?",
+                    senderId = "Sarah",
+                    isOutgoing = false,
+                    timestamp = 0L
+                ),
+                ChatMessage(content = "Tuesday works. 3pm ok?", senderId = "John", isOutgoing = true, timestamp = 0L),
+            )
         )
-    ).asStateFlow()
+    )
+    val viewState: StateFlow<ChatViewState> = _viewState.asStateFlow()
 
     fun switchUser() {
-        _currentUser.value = _currentUser.value.switched()
+        _viewState.update { currentState ->
+            currentState.copy(currentUser = currentState.currentUser.switched())
+        }
     }
 
 }
