@@ -10,7 +10,7 @@ import androidx.room3.PrimaryKey
 import androidx.room3.Query
 import androidx.room3.RoomDatabase
 
-@Database(entities = [Chat::class, Message::class], version = 1)
+@Database(entities = [Chat::class, Message::class], version = 2)
 abstract class ChatDatabase : RoomDatabase() {
     abstract fun chatDao(): ChatDao
     abstract fun messageDao(): MessageDao
@@ -33,7 +33,7 @@ data class Chat(
     ]
 )
 data class Message(
-    @PrimaryKey val id: Int,
+    @PrimaryKey(autoGenerate = true) val id: Int,
     @ColumnInfo(index = true) val chatId: Int,
     val content: String,
     val senderId: String,
@@ -53,4 +53,7 @@ interface ChatDao {
 interface MessageDao {
     @Query("SELECT * FROM chat_messages WHERE chatId = :chatId")
     suspend fun getMessages(chatId: Int): List<Message>
+
+    @Insert
+    suspend fun insertMessage(message: Message): Long
 }

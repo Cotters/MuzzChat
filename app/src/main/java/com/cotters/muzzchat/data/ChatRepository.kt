@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.Instant
 
 data class ChatMessage(
     val id: Int,
@@ -42,8 +43,10 @@ class ChatRepository(
         return@withContext messageDao.getMessages(chatId).map(::toDomainModel)
     }
 
-    fun sendMessage(content: String, senderId: String) {
-        // TODO
+    suspend fun sendMessage(content: String, senderId: String) = withContext(dispatcher) {
+        val chatId = chatDao.getChat().id
+        val newMessage = Message(id = 0, chatId = chatId, content = content, senderId = senderId, timestamp = Instant.now().toEpochMilli())
+        messageDao.insertMessage(newMessage)
     }
 
     private fun toDomainModel(dbMessage: Message) = ChatMessage(

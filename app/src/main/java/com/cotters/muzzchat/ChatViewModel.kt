@@ -58,7 +58,9 @@ class ChatViewModel(
 
     fun sendMessage(content: String) {
         if (content.isNotBlank()) {
-            chatRepository.sendMessage(content, senderId = viewState.value.currentUser.name)
+            viewModelScope.launch {
+                chatRepository.sendMessage(content, senderId = viewState.value.currentUser.name)
+            }
         }
     }
 
