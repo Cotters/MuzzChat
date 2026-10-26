@@ -42,6 +42,10 @@ class ChatRepository(
         return@withContext messageDao.getMessages(chatId).map(::toDomainModel)
     }
 
+    fun sendMessage(content: String, senderId: String) {
+        // TODO
+    }
+
     private fun toDomainModel(dbMessage: Message) = ChatMessage(
         id = dbMessage.id,
         content = dbMessage.content,

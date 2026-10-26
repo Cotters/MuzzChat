@@ -56,7 +56,13 @@ class ChatViewModel(
         }
     }
 
-    fun toUiModel(
+    fun sendMessage(content: String) {
+        if (content.isNotBlank()) {
+            chatRepository.sendMessage(content, senderId = viewState.value.currentUser.name)
+        }
+    }
+
+    private fun toUiModel(
         chatMessage: ChatMessage,
         currentUserId: String,
     ): ChatViewMessage {

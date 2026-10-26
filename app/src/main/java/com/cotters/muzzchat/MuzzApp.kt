@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -23,6 +25,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +43,7 @@ import com.cotters.muzzchat.ui.theme.MuzzChatTheme
 fun MuzzApp(
     viewState: ChatViewState,
     onSwitchUserTapped: () -> Unit,
+    onSendMessage: (String) -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -65,9 +72,11 @@ fun MuzzApp(
     ) { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(innerPadding)
-                .padding(horizontal = 4.dp)
                 .fillMaxSize()
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding)
+                .imePadding()
+                .padding(horizontal = 4.dp),
         ) {
             ChatListView(
                 messages = viewState.messages,
@@ -75,25 +84,36 @@ fun MuzzApp(
                     .weight(1f)
                     .fillMaxWidth()
             )
-            ComposeMessageView()
+            ComposeMessageView(onSendMessage = onSendMessage)
         }
     }
 }
 
 @Composable
-fun ComposeMessageView() {
+fun ComposeMessageView(
+    onSendMessage: (String) -> Unit,
+) {
+    var message by rememberSaveable { mutableStateOf("") }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         OutlinedTextField(
-            value = "",
-            onValueChange = { _ -> },
+            value = message,
+            onValueChange = { newValue -> message = newValue },
+            modifier = Modifier.weight(1f),
         )
-        Button(onClick = {/*TODO*/ }) {
+        Button(
+            onClick = {
+                onSendMessage(message)
+                message = ""
+            },
+            enabled = message.isNotBlank(),
+        ) {
             Text("Send")
         }
     }
@@ -163,7 +183,8 @@ private fun MuzzAppPreview() {
                 currentUser = User.John,
                 messages = storedMessages,
             ),
-            onSwitchUserTapped = {}
+            onSwitchUserTapped = {},
+            onSendMessage = { _ -> },
         )
     }
 }

@@ -21,7 +21,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             val viewState: ChatViewState by viewModel.viewState.collectAsStateWithLifecycle()
             MuzzChatTheme {
-                MuzzApp(viewState = viewState, onSwitchUserTapped = viewModel::switchUser)
+                MuzzApp(
+                    viewState = viewState,
+                    onSwitchUserTapped = viewModel::switchUser,
+                    onSendMessage = viewModel::sendMessage
+                )
             }
         }
     }
