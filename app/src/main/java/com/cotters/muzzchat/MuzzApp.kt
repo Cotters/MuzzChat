@@ -23,7 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,15 +30,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cotters.muzzchat.ui.theme.MuzzChatTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MuzzApp(viewModel: ChatViewModel) {
-
-    val viewState by viewModel.viewState.collectAsStateWithLifecycle()
-
+fun MuzzApp(
+    viewState: ChatViewState,
+    onSwitchUserTapped: () -> Unit,
+) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -58,7 +56,7 @@ fun MuzzApp(viewModel: ChatViewModel) {
                     }
                 },
                 actions = {
-                    TextButton(onClick = viewModel::switchUser) {
+                    TextButton(onClick = onSwitchUserTapped) {
                         Text("Switch user")
                     }
                 }
@@ -103,7 +101,7 @@ fun ComposeMessageView() {
 
 @Composable
 fun ChatListView(
-    messages: List<ChatMessage>,
+    messages: List<ChatViewMessage>,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier = modifier) {
@@ -114,7 +112,7 @@ fun ChatListView(
 }
 
 @Composable
-fun ChatListMessageItemView(message: ChatMessage) {
+fun ChatListMessageItemView(message: ChatViewMessage) {
     val arrangement = if (message.isOutgoing) Arrangement.End else Arrangement.Start
     val backgroundColor = if (message.isOutgoing) MaterialTheme.colorScheme.primaryContainer else
         MaterialTheme.colorScheme.surfaceContainerHigh
@@ -154,7 +152,18 @@ fun MessageBubble(
 @Preview
 @Composable
 private fun MuzzAppPreview() {
+    val storedMessages = listOf(
+        ChatViewMessage(id = 0, content = "Hi John", senderId = "Sarah", isOutgoing = false, timestamp = 0L),
+        ChatViewMessage(id = 1, content = "Let's do Tuesday. What time?", isOutgoing = false, senderId = "Sarah", timestamp = 0L),
+        ChatViewMessage(id = 2, content = "Tuesday works. 3pm ok?", isOutgoing = false, senderId = "John", timestamp = 0L),
+    )
     MuzzChatTheme {
-        MuzzApp(ChatViewModel())
+        MuzzApp(
+            viewState = ChatViewState(
+                currentUser = User.John,
+                messages = storedMessages,
+            ),
+            onSwitchUserTapped = {}
+        )
     }
 }

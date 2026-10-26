@@ -1,11 +1,14 @@
 package com.cotters.muzzchat
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.cotters.muzzchat.data.ChatMessage
+import com.cotters.muzzchat.data.ChatRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import java.util.Random
+import kotlinx.coroutines.launch
 
 enum class User {
     John, Sarah;
@@ -20,29 +23,32 @@ enum class User {
 
 data class ChatViewState(
     val currentUser: User,
-    val messages: List<ChatMessage>,
+    val messages: List<ChatViewMessage>,
 ) {
     val recipient: User
         get() = currentUser.switched()
 }
 
-class ChatViewModel : ViewModel() {
+class ChatViewModel(
+    val chatRepository: ChatRepository,
+) : ViewModel() {
 
     private val _viewState: MutableStateFlow<ChatViewState> = MutableStateFlow(
         ChatViewState(
-            currentUser = User.John, messages = listOf(
-                ChatMessage(content = "Hi John", senderId = "Sarah", isOutgoing = false, timestamp = 0L),
-                ChatMessage(
-                    content = "Let's do Tuesday. What time?",
-                    senderId = "Sarah",
-                    isOutgoing = false,
-                    timestamp = 0L
-                ),
-                ChatMessage(content = "Tuesday works. 3pm ok?", senderId = "John", isOutgoing = true, timestamp = 0L),
-            )
+            currentUser = User.John,
+            messages = emptyList(),
         )
     )
     val viewState: StateFlow<ChatViewState> = _viewState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            val messages = chatRepository.getChatMessages()
+            _viewState.update { currentState ->
+                currentState.copy(messages = messages.map { toUiModel(it, currentState.currentUser.name) })
+            }
+        }
+    }
 
     fun switchUser() {
         _viewState.update { currentState ->
@@ -50,10 +56,23 @@ class ChatViewModel : ViewModel() {
         }
     }
 
+    fun toUiModel(
+        chatMessage: ChatMessage,
+        currentUserId: String,
+    ): ChatViewMessage {
+        return ChatViewMessage(
+            id = chatMessage.id,
+            content = chatMessage.content,
+            senderId = chatMessage.senderId,
+            isOutgoing = chatMessage.senderId == currentUserId,
+            timestamp = chatMessage.timestamp,
+        )
+    }
+
 }
 
-data class ChatMessage(
-    val id: Int = Random().nextInt(),
+data class ChatViewMessage(
+    val id: Int,
     val content: String,
     val senderId: String,
     val isOutgoing: Boolean,
