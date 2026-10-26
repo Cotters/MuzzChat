@@ -71,46 +71,65 @@ fun MuzzApp(viewModel: ChatViewModel) {
                 .padding(horizontal = 4.dp)
                 .fillMaxSize()
         ) {
-            LazyColumn(
+            ChatListView(
+                messages = viewState.messages,
                 modifier = Modifier
-                    .fillMaxWidth()
                     .weight(1f)
-            ) {
-                items(viewState.messages) { message ->
-                    val arrangement = if (message.isOutgoing) Arrangement.End else Arrangement.Start
-                    val backgroundColor = if (message.isOutgoing) MaterialTheme.colorScheme.primaryContainer else
-                        MaterialTheme.colorScheme.surfaceContainerHigh
-                    val textColor = if (message.isOutgoing) MaterialTheme.colorScheme.onPrimaryContainer else
-                        MaterialTheme.colorScheme.onSurface
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = arrangement
-                    ) {
-                        MessageBubble(
-                            content = message.content,
-                            backgroundColor = backgroundColor,
-                            textColor = textColor,
-                            modifier = Modifier,
-                        )
-                    }
-                }
-            }
-            Row(
-                modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = { _ -> },
-                )
-                Button(onClick = {/*TODO*/ }) {
-                    Text("Send")
-                }
-            }
+            )
+            ComposeMessageView()
         }
+    }
+}
+
+@Composable
+fun ComposeMessageView() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        OutlinedTextField(
+            value = "",
+            onValueChange = { _ -> },
+        )
+        Button(onClick = {/*TODO*/ }) {
+            Text("Send")
+        }
+    }
+}
+
+@Composable
+fun ChatListView(
+    messages: List<ChatMessage>,
+    modifier: Modifier = Modifier,
+) {
+    LazyColumn(modifier = modifier) {
+        items(messages) { message ->
+            ChatListMessageItemView(message)
+        }
+    }
+}
+
+@Composable
+fun ChatListMessageItemView(message: ChatMessage) {
+    val arrangement = if (message.isOutgoing) Arrangement.End else Arrangement.Start
+    val backgroundColor = if (message.isOutgoing) MaterialTheme.colorScheme.primaryContainer else
+        MaterialTheme.colorScheme.surfaceContainerHigh
+    val textColor = if (message.isOutgoing) MaterialTheme.colorScheme.onPrimaryContainer else
+        MaterialTheme.colorScheme.onSurface
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = arrangement
+    ) {
+        MessageBubble(
+            content = message.content,
+            backgroundColor = backgroundColor,
+            textColor = textColor,
+            modifier = Modifier,
+        )
     }
 }
 
