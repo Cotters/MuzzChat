@@ -27,10 +27,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cotters.muzzchat.ui.theme.MuzzChatTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,9 +77,22 @@ fun MuzzApp(viewModel: ChatViewModel) {
                     .weight(1f)
             ) {
                 items(viewState.messages) { message ->
-                    MessageBubble(
-                        content = message.content
-                    )
+                    val arrangement = if (message.isOutgoing) Arrangement.End else Arrangement.Start
+                    val backgroundColor = if (message.isOutgoing) MaterialTheme.colorScheme.primaryContainer else
+                        MaterialTheme.colorScheme.surfaceContainerHigh
+                    val textColor = if (message.isOutgoing) MaterialTheme.colorScheme.onPrimaryContainer else
+                        MaterialTheme.colorScheme.onSurface
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = arrangement
+                    ) {
+                        MessageBubble(
+                            content = message.content,
+                            backgroundColor = backgroundColor,
+                            textColor = textColor,
+                            modifier = Modifier,
+                        )
+                    }
                 }
             }
             Row(
@@ -100,20 +115,27 @@ fun MuzzApp(viewModel: ChatViewModel) {
 }
 
 @Composable
-fun MessageBubble(content: String) {
+fun MessageBubble(
+    content: String,
+    backgroundColor: Color,
+    textColor: Color,
+    modifier: Modifier = Modifier,
+) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(color = MaterialTheme.colorScheme.primary)
+            .background(color = backgroundColor)
             .padding(8.dp)
             .widthIn(max = 300.dp)
     ) {
-        Text(content, modifier = Modifier.padding(4.dp), color = MaterialTheme.colorScheme.onPrimary)
+        Text(content, modifier = Modifier.padding(4.dp), color = textColor)
     }
 }
 
 @Preview
 @Composable
 private fun MuzzAppPreview() {
-    MuzzApp(ChatViewModel())
+    MuzzChatTheme {
+        MuzzApp(ChatViewModel())
+    }
 }
