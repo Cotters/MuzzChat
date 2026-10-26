@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,6 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun MuzzApp(viewModel: ChatViewModel) {
 
+    val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
     val messages by viewModel.messages.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -51,11 +53,13 @@ fun MuzzApp(viewModel: ChatViewModel) {
                             contentDescription = null,
                             modifier = Modifier.size(50.dp)
                         )
-                        Text("Sarah")
+                        Text(currentUser.switched().name)
                     }
                 },
                 actions = {
-                    // TODO: Dropdown menu icon.
+                    TextButton(onClick = viewModel::switchUser) {
+                        Text("Switch user")
+                    }
                 }
             )
         }
@@ -63,6 +67,7 @@ fun MuzzApp(viewModel: ChatViewModel) {
         Column(
             modifier = Modifier
                 .padding(innerPadding)
+                .padding(horizontal = 4.dp)
                 .fillMaxSize()
         ) {
             LazyColumn(
@@ -79,7 +84,7 @@ fun MuzzApp(viewModel: ChatViewModel) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                    .padding(bottom = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
