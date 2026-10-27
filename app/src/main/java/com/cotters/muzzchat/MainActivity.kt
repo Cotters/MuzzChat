@@ -22,11 +22,14 @@ class MainActivity : ComponentActivity() {
         val viewModel = ChatViewModel(userRepository = userRepository, chatRepository = chatRepository)
         setContent {
             val viewState: ChatViewState by viewModel.viewState.collectAsStateWithLifecycle()
+            val composerState: MessageComposerState by viewModel.composerState.collectAsStateWithLifecycle()
             MuzzChatTheme {
                 MuzzApp(
                     viewState = viewState,
+                    composerState = composerState,
                     onSwitchUserTapped = viewModel::switchUser,
                     onClearChatTapped = viewModel::onClearChatTapped,
+                    onMessageChanged = viewModel::onMessageChanged,
                     onSendMessage = viewModel::sendMessage,
                 )
             }

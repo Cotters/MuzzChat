@@ -1,6 +1,5 @@
 package com.cotters.muzzchat.data
 
-import androidx.room3.withWriteTransaction
 import com.cotters.muzzchat.database.Chat
 import com.cotters.muzzchat.database.ChatDao
 import com.cotters.muzzchat.database.ChatDatabase
@@ -8,17 +7,17 @@ import com.cotters.muzzchat.database.Message
 import com.cotters.muzzchat.database.MessageDao
 import com.cotters.muzzchat.domain.ChatMessage
 import com.cotters.muzzchat.domain.IChatRepository
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
+import com.cotters.muzzchat.domain.SendMessageResult
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
 import java.time.Instant
 
-class ChatRepository(
-    database: ChatDatabase,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
-) : IChatRepository {
+class ChatRepository(database: ChatDatabase) : IChatRepository {
+
+    private companion object {
+        const val FAILED_TO_SEND_MESSAGE = "Failed to send message. Try again."
+    }
 
     private val chatDao: ChatDao = database.chatDao()
     private val messageDao: MessageDao = database.messageDao()
@@ -36,8 +35,16 @@ class ChatRepository(
             .map { dbMessages -> dbMessages.map(::toDomainModel) }
     }
 
-    suspend fun sendMessage(content: String, senderId: String, chatId: Long) = withContext(dispatcher) {
-        messageDao.insertMessage(createNewMessage(content = content, senderId = senderId, chatId = chatId))
+    override suspend fun sendMessage(content: String, senderId: String, chatId: Long): SendMessageResult {
+        try {
+            ensureChatExists(chatId)
+            messageDao.insertMessage(createNewMessage(content = content, senderId = senderId, chatId = chatId))
+            return SendMessageResult.Success
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            return SendMessageResult.Fail(FAILED_TO_SEND_MESSAGE)
+        }
     }
 
     private fun createNewMessage(

@@ -5,11 +5,15 @@ import androidx.lifecycle.viewModelScope
 import com.cotters.muzzchat.data.UserRepository
 import com.cotters.muzzchat.domain.ChatMessage
 import com.cotters.muzzchat.domain.IChatRepository
+import com.cotters.muzzchat.domain.SendMessageResult
 import com.cotters.muzzchat.domain.User
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class ChatViewState(
@@ -26,6 +30,9 @@ class ChatViewModel(
 ) : ViewModel() {
 
     private val staticChatId = 1L
+
+    private val _composerState = MutableStateFlow(MessageComposerState())
+    val composerState: StateFlow<MessageComposerState> = _composerState.asStateFlow()
 
     val viewState: StateFlow<ChatViewState> = combine(
         userRepository.currentUser,
@@ -55,11 +62,32 @@ class ChatViewModel(
         userRepository.switchUser()
     }
 
-    fun sendMessage(content: String) {
-        if (content.isNotBlank()) {
-            val senderId = userRepository.currentUser.value.name
-            viewModelScope.launch {
-                chatRepository.sendMessage(content = content, senderId = senderId, chatId = staticChatId)
+    fun onMessageChanged(content: String) {
+        _composerState.update { current ->
+            if (current.isSending) current else current.copy(draft = content, sendFailed = false)
+        }
+    }
+
+    fun sendMessage() {
+        val composer = _composerState.value
+        if (!composer.canSend) return
+
+        val senderId = userRepository.currentUser.value.name
+        _composerState.value = composer.copy(isSending = true, sendFailed = false)
+
+        viewModelScope.launch {
+            try {
+                val sendResult = chatRepository.sendMessage(
+                    content = composer.draft.trim(),
+                    senderId = senderId,
+                    chatId = staticChatId,
+                )
+                when (sendResult) {
+                    SendMessageResult.Success -> _composerState.value = MessageComposerState()
+                    is SendMessageResult.Fail -> _composerState.update { it.copy(sendFailed = true) }
+                }
+            } finally {
+                _composerState.update { it.copy(isSending = false) }
             }
         }
     }

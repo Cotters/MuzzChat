@@ -45,9 +45,11 @@ import com.cotters.muzzchat.ui.theme.MuzzChatTheme
 @Composable
 fun MuzzApp(
     viewState: ChatViewState,
+    composerState: MessageComposerState,
     onSwitchUserTapped: () -> Unit,
     onClearChatTapped: () -> Unit,
-    onSendMessage: (String) -> Unit,
+    onMessageChanged: (String) -> Unit,
+    onSendMessage: () -> Unit,
 ) {
     var isShowingDropdown by rememberSaveable { mutableStateOf(false) }
     Scaffold(
@@ -115,37 +117,51 @@ fun MuzzApp(
                     .weight(1f)
                     .fillMaxWidth()
             )
-            ComposeMessageView(onSendMessage = onSendMessage)
+            ComposeMessageView(
+                state = composerState,
+                onMessageChanged = onMessageChanged,
+                onSendMessage = onSendMessage,
+            )
         }
     }
 }
 
 @Composable
 fun ComposeMessageView(
-    onSendMessage: (String) -> Unit,
+    state: MessageComposerState,
+    onMessageChanged: (String) -> Unit,
+    onSendMessage: () -> Unit,
 ) {
-    var message by rememberSaveable { mutableStateOf("") }
-
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        OutlinedTextField(
-            value = message,
-            onValueChange = { newValue -> message = newValue },
-            modifier = Modifier.weight(1f),
-        )
-        Button(
-            onClick = {
-                onSendMessage(message)
-                message = ""
-            },
-            enabled = message.isNotBlank(),
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text("Send")
+            OutlinedTextField(
+                value = state.draft,
+                onValueChange = onMessageChanged,
+                enabled = !state.isSending,
+                isError = state.sendFailed,
+                modifier = Modifier.weight(1f),
+            )
+            Button(
+                onClick = onSendMessage,
+                enabled = state.canSend,
+            ) {
+                Text("Send")
+            }
+        }
+        if (state.sendFailed) {
+            Text(
+                text = "Could not send message. Try again.",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+            )
         }
     }
 }
@@ -214,9 +230,11 @@ private fun MuzzAppPreview() {
                 currentUser = User.John,
                 messages = storedMessages,
             ),
+            composerState = MessageComposerState(),
             onSwitchUserTapped = {},
             onClearChatTapped = {},
-            onSendMessage = { _ -> },
+            onMessageChanged = {},
+            onSendMessage = {},
         )
     }
 }
