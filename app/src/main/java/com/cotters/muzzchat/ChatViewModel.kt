@@ -3,24 +3,14 @@ package com.cotters.muzzchat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cotters.muzzchat.data.ChatRepository
+import com.cotters.muzzchat.data.UserRepository
 import com.cotters.muzzchat.domain.ChatMessage
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.cotters.muzzchat.domain.User
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-
-enum class User {
-    John, Sarah;
-
-    fun switched(): User {
-        return when (this) {
-            John -> Sarah
-            Sarah -> John
-        }
-    }
-}
 
 data class ChatViewState(
     val currentUser: User,
@@ -31,50 +21,49 @@ data class ChatViewState(
 }
 
 class ChatViewModel(
+    val userRepository: UserRepository,
     val chatRepository: ChatRepository,
 ) : ViewModel() {
 
-    private val _viewState: MutableStateFlow<ChatViewState> = MutableStateFlow(
-        ChatViewState(
-            currentUser = User.John,
-            messages = emptyList(),
-        )
-    )
-    val viewState: StateFlow<ChatViewState> = _viewState.asStateFlow()
+    private val staticChatId = 1L
 
-    init {
-        viewModelScope.launch {
-            chatRepository.observeChatMessages().collectLatest { messages ->
-                _viewState.update { currentState ->
-                    currentState.copy(messages = messages.map { toUiModel(it, currentState.currentUser.name) })
-                }
-            }
-        }
+    val viewState: StateFlow<ChatViewState> = combine(
+        userRepository.currentUser,
+        chatRepository.observeChatMessages(chatId = staticChatId)
+    ) { currentUser, messages ->
+        ChatViewState(
+            currentUser = currentUser,
+            messages = messages.map { toUiModel(it, currentUser) },
+        )
     }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = ChatViewState(
+                currentUser = userRepository.currentUser.value,
+                messages = emptyList(),
+            )
+        )
 
     fun switchUser() {
-        _viewState.update { currentState ->
-            currentState.copy(currentUser = currentState.currentUser.switched())
-        }
+        userRepository.switchUser()
     }
 
     fun sendMessage(content: String) {
         if (content.isNotBlank()) {
+            val senderId = userRepository.currentUser.value.name
             viewModelScope.launch {
-                chatRepository.sendMessage(content, senderId = viewState.value.currentUser.name)
+                chatRepository.sendMessage(content = content, senderId = senderId, chatId = staticChatId)
             }
         }
     }
 
-    private fun toUiModel(
-        chatMessage: ChatMessage,
-        currentUserId: String,
-    ): ChatViewMessage {
+    private fun toUiModel(chatMessage: ChatMessage, currentUser: User): ChatViewMessage {
         return ChatViewMessage(
             id = chatMessage.id,
             content = chatMessage.content,
             senderId = chatMessage.senderId,
-            isOutgoing = chatMessage.senderId == currentUserId,
+            isOutgoing = chatMessage.senderId == currentUser.name,
             timestamp = chatMessage.timestamp,
         )
     }

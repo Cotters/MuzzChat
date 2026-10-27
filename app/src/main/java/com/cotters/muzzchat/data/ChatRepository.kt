@@ -22,24 +22,27 @@ class ChatRepository(
     private val chatDao: ChatDao = database.chatDao()
     private val messageDao: MessageDao = database.messageDao()
 
-    private suspend fun getOrCreateChatId(): Long {
+    suspend fun getOrCreateChatId(): Long {
         return database.withWriteTransaction {
             chatDao.getChat()?.id ?: chatDao.createNewChat(Chat())
         }
     }
 
-    suspend fun observeChatMessages(): Flow<List<ChatMessage>> = withContext(dispatcher) {
-        val chatId = getOrCreateChatId()
-        return@withContext messageDao.getMessages(chatId)
+    fun observeChatMessages(chatId: Long): Flow<List<ChatMessage>> {
+        return messageDao.getMessages(chatId)
             .map { dbMessages -> dbMessages.map(::toDomainModel) }
     }
 
-    suspend fun sendMessage(content: String, senderId: String) = withContext(dispatcher) {
-        messageDao.insertMessage(createNewMessage(content, senderId))
+    suspend fun sendMessage(content: String, senderId: String, chatId: Long) = withContext(dispatcher) {
+        messageDao.insertMessage(createNewMessage(content = content, senderId = senderId, chatId = chatId))
     }
 
-    private suspend fun createNewMessage(content: String, senderId: String): Message = Message(
-        chatId = getOrCreateChatId(),
+    private fun createNewMessage(
+        content: String,
+        senderId: String,
+        chatId: Long,
+    ): Message = Message(
+        chatId = chatId,
         content = content,
         senderId = senderId,
         timestamp = Instant.now().toEpochMilli()
