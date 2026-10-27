@@ -57,4 +57,7 @@ interface MessageDao {
 
     @Insert
     suspend fun insertMessage(message: Message): Long
+
+    @Query("DELETE FROM chat_messages WHERE chatId = :chatId")
+    suspend fun deleteMessages(chatId: Long): Int
 }

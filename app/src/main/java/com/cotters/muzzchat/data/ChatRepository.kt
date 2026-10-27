@@ -22,10 +22,8 @@ class ChatRepository(
     private val chatDao: ChatDao = database.chatDao()
     private val messageDao: MessageDao = database.messageDao()
 
-    suspend fun getOrCreateChatId(): Long {
-        return database.withWriteTransaction {
-            chatDao.getChat()?.id ?: chatDao.createNewChat(Chat())
-        }
+    suspend fun clearChat(chatId: Long) {
+        messageDao.deleteMessages(chatId = chatId)
     }
 
     fun observeChatMessages(chatId: Long): Flow<List<ChatMessage>> {

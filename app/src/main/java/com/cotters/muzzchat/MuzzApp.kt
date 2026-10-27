@@ -16,13 +16,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,8 +46,10 @@ import com.cotters.muzzchat.ui.theme.MuzzChatTheme
 fun MuzzApp(
     viewState: ChatViewState,
     onSwitchUserTapped: () -> Unit,
+    onClearChatTapped: () -> Unit,
     onSendMessage: (String) -> Unit,
 ) {
+    var isShowingDropdown by rememberSaveable { mutableStateOf(false) }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -64,8 +68,34 @@ fun MuzzApp(
                     }
                 },
                 actions = {
-                    TextButton(onClick = onSwitchUserTapped) {
-                        Text("Switch user")
+                    IconButton(
+                        onClick = {
+                            isShowingDropdown = !isShowingDropdown
+                        }
+                    ) {
+                        val iconId = if (isShowingDropdown) R.drawable.arrow_up else R.drawable.arrow_down
+                        Icon(
+                            painterResource(iconId),
+                            contentDescription = null,
+                            modifier = Modifier.size(50.dp)
+                        )
+                    }
+                    DropdownMenu(
+                        isShowingDropdown,
+                        onDismissRequest = { isShowingDropdown = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = {
+                                Text("Switch User")
+                            },
+                            onClick = onSwitchUserTapped,
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Text("Clear Chat")
+                            },
+                            onClick = onClearChatTapped,
+                        )
                     }
                 }
             )
@@ -185,6 +215,7 @@ private fun MuzzAppPreview() {
                 messages = storedMessages,
             ),
             onSwitchUserTapped = {},
+            onClearChatTapped = {},
             onSendMessage = { _ -> },
         )
     }

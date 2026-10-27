@@ -58,6 +58,12 @@ class ChatViewModel(
         }
     }
 
+    fun onClearChatTapped() {
+        viewModelScope.launch {
+            chatRepository.clearChat(staticChatId)
+        }
+    }
+
     private fun toUiModel(chatMessage: ChatMessage, currentUser: User): ChatViewMessage {
         return ChatViewMessage(
             id = chatMessage.id,
