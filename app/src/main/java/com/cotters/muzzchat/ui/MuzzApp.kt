@@ -113,7 +113,7 @@ fun MuzzApp(
                 .padding(horizontal = 4.dp),
         ) {
             ChatListView(
-                messages = viewState.messages,
+                listItems = viewState.listItems,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
@@ -169,12 +169,29 @@ fun ComposeMessageView(
 
 @Composable
 fun ChatListView(
-    messages: List<ChatViewMessage>,
+    listItems: List<ChatListItem>,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(modifier = modifier) {
-        items(messages) { message ->
-            ChatListMessageItemView(message)
+    LazyColumn(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        // TODO: Add keys based on item type and last message in each block.
+        items(listItems) { item ->
+            when (item) {
+                is ChatListItem.TimeSeparator -> {
+                    // TODO: Show time label
+                }
+                is ChatListItem.MessageBlock -> {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(1.dp)
+                    ) {
+                        item.messages.forEach { message ->
+                            ChatListMessageItemView(message)
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -220,16 +237,15 @@ fun MessageBubble(
 @Preview
 @Composable
 private fun MuzzAppPreview() {
-    val storedMessages = listOf(
-        ChatViewMessage(id = 0, content = "Hi John", senderId = "Sarah", isOutgoing = false, timestamp = 0L),
-        ChatViewMessage(id = 1, content = "Let's do Tuesday. What time?", isOutgoing = false, senderId = "Sarah", timestamp = 0L),
-        ChatViewMessage(id = 2, content = "Tuesday works. 3pm ok?", isOutgoing = false, senderId = "John", timestamp = 0L),
+    val listItems = UiMessageMapper.buildChatListItems(
+        messages = SampleChat.messages,
+        currentUserId = "John"
     )
     MuzzChatTheme {
         MuzzApp(
             viewState = ChatViewState(
                 currentUser = User.John,
-                messages = storedMessages,
+                listItems = listItems,
             ),
             composerState = MessageComposerState(),
             onSwitchUserTapped = {},

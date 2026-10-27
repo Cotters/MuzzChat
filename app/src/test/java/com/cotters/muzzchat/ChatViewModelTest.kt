@@ -7,6 +7,7 @@ import com.cotters.muzzchat.domain.IChatRepository
 import com.cotters.muzzchat.domain.SendMessageResult
 import com.cotters.muzzchat.domain.User
 import com.cotters.muzzchat.testing.MainDispatcherRule
+import com.cotters.muzzchat.ui.ChatListItem
 import com.cotters.muzzchat.ui.ChatViewMessage
 import com.cotters.muzzchat.ui.ChatViewModel
 import com.cotters.muzzchat.ui.ChatViewState
@@ -161,16 +162,26 @@ class ChatViewModelTest {
         observeState()
         chatRepository.messages.value = listOf(ChatMessage(1L, "Hello", "John", 100L))
         runCurrent()
-        assertEquals(listOf(ChatViewMessage(1L, "Hello", "John", true, 100L)), viewModel.viewState.value.messages)
+        assertEquals(
+            listOf(ChatListItem.MessageBlock(listOf(ChatViewMessage(1L, "Hello", "John", true, 100L)))),
+            viewModel.viewState.value.listItems,
+        )
 
         viewModel.switchUser()
         runCurrent()
         assertEquals(User.Sarah, viewModel.viewState.value.currentUser)
-        assertFalse(viewModel.viewState.value.messages.single().isOutgoing)
+        assertFalse(viewModel.viewState.value.getLastMessage().isOutgoing)
 
         chatRepository.messages.value += ChatMessage(2L, "Reply", "Sarah", 200L)
         runCurrent()
-        assertEquals(ChatViewMessage(2L, "Reply", "Sarah", true, 200L), viewModel.viewState.value.messages.last())
+        assertEquals(
+            ChatViewMessage(2L, "Reply", "Sarah", true, 200L),
+            viewModel.viewState.value.getLastMessage(),
+        )
+    }
+
+    private fun ChatViewState.getLastMessage(): ChatViewMessage {
+        return (listItems.filterIsInstance<ChatListItem.MessageBlock>()).flatMap(ChatListItem.MessageBlock::messages).last()
     }
 
     private fun TestScope.observeState(): List<ChatViewState> {

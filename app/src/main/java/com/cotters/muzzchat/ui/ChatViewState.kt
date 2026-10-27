@@ -4,8 +4,13 @@ import com.cotters.muzzchat.domain.User
 
 data class ChatViewState(
     val currentUser: User,
-    val messages: List<ChatViewMessage>,
+    val listItems: List<ChatListItem>,
 ) {
     val recipient: User
         get() = currentUser.switched()
+}
+
+sealed interface ChatListItem {
+    data class MessageBlock(val messages: List<ChatViewMessage>) : ChatListItem
+    data class TimeSeparator(val timestamp: Long) : ChatListItem
 }

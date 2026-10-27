@@ -3,10 +3,8 @@ package com.cotters.muzzchat.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cotters.muzzchat.data.UserRepository
-import com.cotters.muzzchat.domain.ChatMessage
 import com.cotters.muzzchat.domain.IChatRepository
 import com.cotters.muzzchat.domain.SendMessageResult
-import com.cotters.muzzchat.domain.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -28,11 +26,11 @@ class ChatViewModel(
 
     val viewState: StateFlow<ChatViewState> = combine(
         userRepository.currentUser,
-        chatRepository.observeChatMessages(chatId = staticChatId)
+        chatRepository.observeChatMessages(chatId = staticChatId),
     ) { currentUser, messages ->
         ChatViewState(
             currentUser = currentUser,
-            messages = messages.map { toUiModel(it, currentUser) },
+            listItems = UiMessageMapper.buildChatListItems(messages, currentUser.name),
         )
     }
         .stateIn(
@@ -40,7 +38,7 @@ class ChatViewModel(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = ChatViewState(
                 currentUser = userRepository.currentUser.value,
-                messages = emptyList(),
+                listItems = emptyList(),
             )
         )
 
@@ -89,15 +87,4 @@ class ChatViewModel(
             chatRepository.clearChat(staticChatId)
         }
     }
-
-    private fun toUiModel(chatMessage: ChatMessage, currentUser: User): ChatViewMessage {
-        return ChatViewMessage(
-            id = chatMessage.id,
-            content = chatMessage.content,
-            senderId = chatMessage.senderId,
-            isOutgoing = chatMessage.senderId == currentUser.name,
-            timestamp = chatMessage.timestamp,
-        )
-    }
-
 }
