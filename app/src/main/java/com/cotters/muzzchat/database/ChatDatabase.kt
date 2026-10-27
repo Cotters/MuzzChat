@@ -6,6 +6,7 @@ import androidx.room3.Database
 import androidx.room3.Entity
 import androidx.room3.ForeignKey
 import androidx.room3.Insert
+import androidx.room3.OnConflictStrategy
 import androidx.room3.PrimaryKey
 import androidx.room3.Query
 import androidx.room3.RoomDatabase
@@ -43,8 +44,8 @@ data class Message(
 
 @Dao
 interface ChatDao {
-    @Insert
-    suspend fun createNewChat(chat: Chat): Long
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertIfAbsent(chat: Chat): Long
 
     @Query("SELECT * FROM chats LIMIT 1")
     fun getChat(): Chat?

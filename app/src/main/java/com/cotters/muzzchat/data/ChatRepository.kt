@@ -7,6 +7,7 @@ import com.cotters.muzzchat.database.ChatDatabase
 import com.cotters.muzzchat.database.Message
 import com.cotters.muzzchat.database.MessageDao
 import com.cotters.muzzchat.domain.ChatMessage
+import com.cotters.muzzchat.domain.IChatRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -15,18 +16,22 @@ import kotlinx.coroutines.withContext
 import java.time.Instant
 
 class ChatRepository(
-    private val database: ChatDatabase,
+    database: ChatDatabase,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
-) {
+) : IChatRepository {
 
     private val chatDao: ChatDao = database.chatDao()
     private val messageDao: MessageDao = database.messageDao()
 
-    suspend fun clearChat(chatId: Long) {
+    override suspend fun ensureChatExists(chatId: Long) {
+        chatDao.insertIfAbsent(Chat(id = chatId))
+    }
+
+    override suspend fun clearChat(chatId: Long) {
         messageDao.deleteMessages(chatId = chatId)
     }
 
-    fun observeChatMessages(chatId: Long): Flow<List<ChatMessage>> {
+    override fun observeChatMessages(chatId: Long): Flow<List<ChatMessage>> {
         return messageDao.getMessages(chatId)
             .map { dbMessages -> dbMessages.map(::toDomainModel) }
     }

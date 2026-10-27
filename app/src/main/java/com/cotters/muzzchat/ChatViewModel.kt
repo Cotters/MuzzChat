@@ -2,9 +2,9 @@ package com.cotters.muzzchat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cotters.muzzchat.data.ChatRepository
 import com.cotters.muzzchat.data.UserRepository
 import com.cotters.muzzchat.domain.ChatMessage
+import com.cotters.muzzchat.domain.IChatRepository
 import com.cotters.muzzchat.domain.User
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +22,7 @@ data class ChatViewState(
 
 class ChatViewModel(
     val userRepository: UserRepository,
-    val chatRepository: ChatRepository,
+    val chatRepository: IChatRepository,
 ) : ViewModel() {
 
     private val staticChatId = 1L
@@ -44,6 +44,12 @@ class ChatViewModel(
                 messages = emptyList(),
             )
         )
+
+    init {
+        viewModelScope.launch {
+            chatRepository.ensureChatExists(chatId = staticChatId)
+        }
+    }
 
     fun switchUser() {
         userRepository.switchUser()
