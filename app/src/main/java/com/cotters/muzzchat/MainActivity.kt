@@ -5,10 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.cotters.muzzchat.data.ChatRepository
-import com.cotters.muzzchat.data.UserRepository
-import com.cotters.muzzchat.database.DatabaseModule
 import com.cotters.muzzchat.ui.theme.MuzzChatTheme
 
 class MainActivity : ComponentActivity() {
@@ -16,10 +14,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val database = DatabaseModule.getDatabase(this)
-        val userRepository = UserRepository()
-        val chatRepository = ChatRepository(database = database)
-        val viewModel = ChatViewModel(userRepository = userRepository, chatRepository = chatRepository)
+        val viewModel = ViewModelProvider(this, createChatViewModelFactory(applicationContext))[ChatViewModel::class.java]
         setContent {
             val viewState: ChatViewState by viewModel.viewState.collectAsStateWithLifecycle()
             val composerState: MessageComposerState by viewModel.composerState.collectAsStateWithLifecycle()
