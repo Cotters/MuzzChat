@@ -9,6 +9,7 @@ import androidx.room3.Insert
 import androidx.room3.PrimaryKey
 import androidx.room3.Query
 import androidx.room3.RoomDatabase
+import kotlinx.coroutines.flow.Flow
 
 @Database(entities = [Chat::class, Message::class], version = 2)
 abstract class ChatDatabase : RoomDatabase() {
@@ -43,7 +44,7 @@ data class Message(
 @Dao
 interface ChatDao {
     @Insert
-    fun createNewChat(chat: Chat): Long
+    suspend fun createNewChat(chat: Chat): Long
 
     @Query("SELECT * FROM chats LIMIT 1")
     fun getChat(): Chat
@@ -51,8 +52,8 @@ interface ChatDao {
 
 @Dao
 interface MessageDao {
-    @Query("SELECT * FROM chat_messages WHERE chatId = :chatId")
-    suspend fun getMessages(chatId: Int): List<Message>
+    @Query("SELECT * FROM chat_messages WHERE chatId = :chatId ORDER BY timestamp ASC")
+    fun getMessages(chatId: Int): Flow<List<Message>>
 
     @Insert
     suspend fun insertMessage(message: Message): Long

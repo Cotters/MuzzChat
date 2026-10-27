@@ -2,11 +2,12 @@ package com.cotters.muzzchat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cotters.muzzchat.data.ChatMessage
 import com.cotters.muzzchat.data.ChatRepository
+import com.cotters.muzzchat.domain.ChatMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -43,9 +44,10 @@ class ChatViewModel(
 
     init {
         viewModelScope.launch {
-            val messages = chatRepository.getChatMessages()
-            _viewState.update { currentState ->
-                currentState.copy(messages = messages.map { toUiModel(it, currentState.currentUser.name) })
+            chatRepository.observeChatMessages().collectLatest { messages ->
+                _viewState.update { currentState ->
+                    currentState.copy(messages = messages.map { toUiModel(it, currentState.currentUser.name) })
+                }
             }
         }
     }

@@ -5,9 +5,12 @@ import com.cotters.muzzchat.database.ChatDao
 import com.cotters.muzzchat.database.ChatDatabase
 import com.cotters.muzzchat.database.Message
 import com.cotters.muzzchat.database.MessageDao
+import com.cotters.muzzchat.domain.ChatMessage
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.Instant
@@ -38,9 +41,10 @@ class ChatRepository(
         }
     }
 
-    suspend fun getChatMessages(): List<ChatMessage> = withContext(dispatcher) {
+    suspend fun observeChatMessages(): Flow<List<ChatMessage>> = withContext(dispatcher) {
         val chatId = chatDao.getChat().id
-        return@withContext messageDao.getMessages(chatId).map(::toDomainModel)
+        return@withContext messageDao.getMessages(chatId)
+            .map { dbMessages -> dbMessages.map(::toDomainModel) }
     }
 
     suspend fun sendMessage(content: String, senderId: String) = withContext(dispatcher) {
