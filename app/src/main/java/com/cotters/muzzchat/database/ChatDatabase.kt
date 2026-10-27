@@ -19,7 +19,7 @@ abstract class ChatDatabase : RoomDatabase() {
 
 @Entity(tableName = "chats")
 data class Chat(
-    @PrimaryKey(autoGenerate = true) val id: Int,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
 )
 
 @Entity(
@@ -34,8 +34,8 @@ data class Chat(
     ]
 )
 data class Message(
-    @PrimaryKey(autoGenerate = true) val id: Int,
-    @ColumnInfo(index = true) val chatId: Int,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @ColumnInfo(index = true) val chatId: Long,
     val content: String,
     val senderId: String,
     val timestamp: Long,
@@ -47,13 +47,13 @@ interface ChatDao {
     suspend fun createNewChat(chat: Chat): Long
 
     @Query("SELECT * FROM chats LIMIT 1")
-    fun getChat(): Chat
+    fun getChat(): Chat?
 }
 
 @Dao
 interface MessageDao {
     @Query("SELECT * FROM chat_messages WHERE chatId = :chatId ORDER BY timestamp ASC")
-    fun getMessages(chatId: Int): Flow<List<Message>>
+    fun getMessages(chatId: Long): Flow<List<Message>>
 
     @Insert
     suspend fun insertMessage(message: Message): Long

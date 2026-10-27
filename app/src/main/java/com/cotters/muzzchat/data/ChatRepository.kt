@@ -1,5 +1,6 @@
 package com.cotters.muzzchat.data
 
+import androidx.room3.withWriteTransaction
 import com.cotters.muzzchat.database.Chat
 import com.cotters.muzzchat.database.ChatDao
 import com.cotters.muzzchat.database.ChatDatabase
@@ -7,20 +8,11 @@ import com.cotters.muzzchat.database.Message
 import com.cotters.muzzchat.database.MessageDao
 import com.cotters.muzzchat.domain.ChatMessage
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.Instant
-
-data class ChatMessage(
-    val id: Int,
-    val content: String,
-    val senderId: String,
-    val timestamp: Long,
-)
 
 class ChatRepository(
     private val database: ChatDatabase,
@@ -30,28 +22,28 @@ class ChatRepository(
     private val chatDao: ChatDao = database.chatDao()
     private val messageDao: MessageDao = database.messageDao()
 
-    init {
-        createChatIfNoneExist()
-    }
-
-    private fun createChatIfNoneExist() {
-        CoroutineScope(dispatcher).launch {
-            runCatching { database.chatDao().getChat() }
-                .onFailure { database.chatDao().createNewChat(Chat(id = 0)) }
+    private suspend fun getOrCreateChatId(): Long {
+        return database.withWriteTransaction {
+            chatDao.getChat()?.id ?: chatDao.createNewChat(Chat())
         }
     }
 
     suspend fun observeChatMessages(): Flow<List<ChatMessage>> = withContext(dispatcher) {
-        val chatId = chatDao.getChat().id
+        val chatId = getOrCreateChatId()
         return@withContext messageDao.getMessages(chatId)
             .map { dbMessages -> dbMessages.map(::toDomainModel) }
     }
 
     suspend fun sendMessage(content: String, senderId: String) = withContext(dispatcher) {
-        val chatId = chatDao.getChat().id
-        val newMessage = Message(id = 0, chatId = chatId, content = content, senderId = senderId, timestamp = Instant.now().toEpochMilli())
-        messageDao.insertMessage(newMessage)
+        messageDao.insertMessage(createNewMessage(content, senderId))
     }
+
+    private suspend fun createNewMessage(content: String, senderId: String): Message = Message(
+        chatId = getOrCreateChatId(),
+        content = content,
+        senderId = senderId,
+        timestamp = Instant.now().toEpochMilli()
+    )
 
     private fun toDomainModel(dbMessage: Message) = ChatMessage(
         id = dbMessage.id,

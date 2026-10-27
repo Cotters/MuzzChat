@@ -82,7 +82,7 @@ class ChatViewModel(
 }
 
 data class ChatViewMessage(
-    val id: Int,
+    val id: Long,
     val content: String,
     val senderId: String,
     val isOutgoing: Boolean,
