@@ -1,4 +1,4 @@
-package com.cotters.muzzchat
+package com.cotters.muzzchat.ui
 
 data class MessageComposerState(
     val draft: String = "",

@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.cotters.muzzchat.data.ChatRepository
 import com.cotters.muzzchat.data.UserRepository
 import com.cotters.muzzchat.database.DatabaseModule
+import com.cotters.muzzchat.ui.ChatViewModel
 
 fun createChatViewModelFactory(context: Context): ViewModelProvider.Factory {
     val appContext = context.applicationContext

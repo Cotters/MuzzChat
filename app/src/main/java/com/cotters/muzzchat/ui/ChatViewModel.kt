@@ -1,4 +1,4 @@
-package com.cotters.muzzchat
+package com.cotters.muzzchat.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,14 +15,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
-data class ChatViewState(
-    val currentUser: User,
-    val messages: List<ChatViewMessage>,
-) {
-    val recipient: User
-        get() = currentUser.switched()
-}
 
 class ChatViewModel(
     val userRepository: UserRepository,
@@ -109,11 +101,3 @@ class ChatViewModel(
     }
 
 }
-
-data class ChatViewMessage(
-    val id: Long,
-    val content: String,
-    val senderId: String,
-    val isOutgoing: Boolean,
-    val timestamp: Long,
-)

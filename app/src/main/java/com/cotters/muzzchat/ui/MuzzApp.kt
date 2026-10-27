@@ -1,4 +1,4 @@
-package com.cotters.muzzchat
+package com.cotters.muzzchat.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.cotters.muzzchat.R
 import com.cotters.muzzchat.domain.User
 import com.cotters.muzzchat.ui.theme.MuzzChatTheme
 

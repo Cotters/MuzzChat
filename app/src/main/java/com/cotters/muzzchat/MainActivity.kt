@@ -7,6 +7,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cotters.muzzchat.ui.ChatViewModel
+import com.cotters.muzzchat.ui.ChatViewState
+import com.cotters.muzzchat.ui.MessageComposerState
+import com.cotters.muzzchat.ui.MuzzApp
 import com.cotters.muzzchat.ui.theme.MuzzChatTheme
 
 class MainActivity : ComponentActivity() {

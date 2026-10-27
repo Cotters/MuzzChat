@@ -7,6 +7,10 @@ import com.cotters.muzzchat.domain.IChatRepository
 import com.cotters.muzzchat.domain.SendMessageResult
 import com.cotters.muzzchat.domain.User
 import com.cotters.muzzchat.testing.MainDispatcherRule
+import com.cotters.muzzchat.ui.ChatViewMessage
+import com.cotters.muzzchat.ui.ChatViewModel
+import com.cotters.muzzchat.ui.ChatViewState
+import com.cotters.muzzchat.ui.MessageComposerState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
