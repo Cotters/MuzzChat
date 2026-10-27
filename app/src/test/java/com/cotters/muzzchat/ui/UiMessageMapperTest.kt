@@ -10,16 +10,19 @@ class UiMessageMapperTest {
     fun `group messages sent by sender`() {
         val expectedListItems = UiMessageMapper.buildChatListItems(messages, CURRENT_USER_ID)
         assertEquals(
-            listOf<ChatListItem>(
+            listOf(
+                ChatListItem.TimeSeparator(timestamp = 1792863647000),
                 ChatListItem.MessageBlock(
-                    messages = uiMessages.slice(0..1)
+                    messages = uiMessages.slice(0..0)
                 ),
+                ChatListItem.TimeSeparator(timestamp = 1792984247000),
                 ChatListItem.MessageBlock(
-                    messages = uiMessages.slice(2..2)
+                    messages = uiMessages.slice(1..2)
                 ),
                 ChatListItem.MessageBlock(
                     messages = uiMessages.slice(3..4)
                 ),
+                ChatListItem.TimeSeparator(timestamp = 1794075647000),
                 ChatListItem.MessageBlock(
                     messages = uiMessages.slice(5..6)
                 ),

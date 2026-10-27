@@ -163,25 +163,25 @@ class ChatViewModelTest {
         chatRepository.messages.value = listOf(ChatMessage(1L, "Hello", "John", 100L))
         runCurrent()
         assertEquals(
-            listOf(ChatListItem.MessageBlock(listOf(ChatViewMessage(1L, "Hello", "John", true, 100L)))),
-            viewModel.viewState.value.listItems,
+            listOf(ChatViewMessage(1L, "Hello", "John", true, 100L)),
+            viewModel.viewState.value.getOnlyMessages(),
         )
 
         viewModel.switchUser()
         runCurrent()
         assertEquals(User.Sarah, viewModel.viewState.value.currentUser)
-        assertFalse(viewModel.viewState.value.getLastMessage().isOutgoing)
+        assertFalse(viewModel.viewState.value.getOnlyMessages().last().isOutgoing)
 
         chatRepository.messages.value += ChatMessage(2L, "Reply", "Sarah", 200L)
         runCurrent()
         assertEquals(
             ChatViewMessage(2L, "Reply", "Sarah", true, 200L),
-            viewModel.viewState.value.getLastMessage(),
+            viewModel.viewState.value.getOnlyMessages().last(),
         )
     }
 
-    private fun ChatViewState.getLastMessage(): ChatViewMessage {
-        return (listItems.filterIsInstance<ChatListItem.MessageBlock>()).flatMap(ChatListItem.MessageBlock::messages).last()
+    private fun ChatViewState.getOnlyMessages(): List<ChatViewMessage> {
+        return (listItems.filterIsInstance<ChatListItem.MessageBlock>()).flatMap(ChatListItem.MessageBlock::messages)
     }
 
     private fun TestScope.observeState(): List<ChatViewState> {

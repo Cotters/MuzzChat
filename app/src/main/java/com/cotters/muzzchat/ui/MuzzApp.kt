@@ -1,5 +1,6 @@
 package com.cotters.muzzchat.ui
 
+import android.text.format.DateUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,7 +36,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cotters.muzzchat.R
@@ -180,7 +183,14 @@ fun ChatListView(
         items(listItems) { item ->
             when (item) {
                 is ChatListItem.TimeSeparator -> {
-                    // TODO: Show time label
+                    // TODO: Format within the mapper: weekday if within a week, otherwise date
+                    val context = LocalContext.current
+                    val flags = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME
+                    Text(
+                        text = DateUtils.formatDateTime(context, item.timestamp, flags),
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                        textAlign = TextAlign.Center,
+                    )
                 }
                 is ChatListItem.MessageBlock -> {
                     Column(
