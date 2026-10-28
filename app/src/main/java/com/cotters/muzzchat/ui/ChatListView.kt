@@ -6,9 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -41,15 +39,16 @@ fun ChatListView(
         ?.messages
         ?.lastOrNull()
     LaunchedEffect(latestMessage) {
-        listState.requestScrollToItem(listItems.size)
+        listState.requestScrollToItem(0)
     }
     LazyColumn(
         modifier = modifier.background(MaterialTheme.colorScheme.surface),
+        reverseLayout = true,
         state = listState,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         items(
-            items = listItems,
+            items = listItems.asReversed(),
             key = { item ->
                 when (item) {
                     is ChatListItem.TimeSeparator -> "time_${item.timestamp}"
@@ -72,12 +71,6 @@ fun ChatListView(
                     MessageBlock(item)
                 }
             }
-        }
-        item(
-            key = "CHAT_END_KEY",
-            contentType = "CHAT_END_KEY",
-        ) {
-            Spacer(Modifier.height(1.dp))
         }
     }
 }
