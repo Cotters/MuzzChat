@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cotters.muzzchat.domain.User
 import com.cotters.muzzchat.ui.theme.MuzzChatTheme
+import com.cotters.muzzchat.ui.viewmodel.ChatViewEvent
 import com.cotters.muzzchat.ui.viewmodel.ChatViewState
 import com.cotters.muzzchat.ui.viewmodel.MessageComposerState
 import com.cotters.muzzchat.ui.viewmodel.UiMessageMapper
@@ -23,18 +24,15 @@ import com.cotters.muzzchat.ui.viewmodel.UiMessageMapper
 fun MuzzApp(
     viewState: ChatViewState,
     composerState: MessageComposerState,
-    onSwitchUserTapped: () -> Unit,
-    onClearChatTapped: () -> Unit,
-    onMessageChanged: (String) -> Unit,
-    onSendMessage: () -> Unit,
+    onViewEvent: (ChatViewEvent) -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 recipientName = viewState.recipient.name,
-                onSwitchUserTapped = onSwitchUserTapped,
-                onClearChatTapped = onClearChatTapped
+                onSwitchUserTapped = { onViewEvent(ChatViewEvent.SwitchUser) },
+                onClearChatTapped = { onViewEvent(ChatViewEvent.ClearChat) }
             )
         },
     ) { innerPadding ->
@@ -54,8 +52,8 @@ fun MuzzApp(
             )
             ComposeMessageView(
                 state = composerState,
-                onMessageChanged = onMessageChanged,
-                onSendMessage = onSendMessage,
+                onMessageChanged = { onViewEvent(ChatViewEvent.ComposeMessageChanged(it)) },
+                onSendMessage = { onViewEvent(ChatViewEvent.SendMessageTapped) },
             )
         }
     }
@@ -75,10 +73,7 @@ private fun MuzzAppPreview() {
                 listItems = listItems,
             ),
             composerState = MessageComposerState(),
-            onSwitchUserTapped = {},
-            onClearChatTapped = {},
-            onMessageChanged = {},
-            onSendMessage = {},
+            onViewEvent = {},
         )
     }
 }

@@ -48,17 +48,26 @@ class ChatViewModel(
         }
     }
 
-    fun switchUser() {
+    fun handleViewEvent(event: ChatViewEvent) {
+        when (event) {
+            ChatViewEvent.SwitchUser -> switchUser()
+            ChatViewEvent.ClearChat -> clearChat()
+            is ChatViewEvent.ComposeMessageChanged -> onMessageChanged(event.newContent)
+            is ChatViewEvent.SendMessageTapped -> sendMessage()
+        }
+    }
+
+    private fun switchUser() {
         userRepository.switchUser()
     }
 
-    fun onMessageChanged(content: String) {
+    private fun onMessageChanged(content: String) {
         _composerState.update { current ->
             if (current.isSending) current else current.copy(draft = content, sendFailed = false)
         }
     }
 
-    fun sendMessage() {
+    private fun sendMessage() {
         val composer = _composerState.value
         if (!composer.canSend) return
 
@@ -82,7 +91,7 @@ class ChatViewModel(
         }
     }
 
-    fun onClearChatTapped() {
+    private fun clearChat() {
         viewModelScope.launch {
             chatRepository.clearChat(staticChatId)
         }

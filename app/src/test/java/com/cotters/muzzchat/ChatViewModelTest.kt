@@ -9,6 +9,9 @@ import com.cotters.muzzchat.domain.User
 import com.cotters.muzzchat.testing.MainDispatcherRule
 import com.cotters.muzzchat.ui.ChatViewMessage
 import com.cotters.muzzchat.ui.viewmodel.ChatListItem
+import com.cotters.muzzchat.ui.viewmodel.ChatViewEvent.ComposeMessageChanged
+import com.cotters.muzzchat.ui.viewmodel.ChatViewEvent.SendMessageTapped
+import com.cotters.muzzchat.ui.viewmodel.ChatViewEvent.SwitchUser
 import com.cotters.muzzchat.ui.viewmodel.ChatViewModel
 import com.cotters.muzzchat.ui.viewmodel.ChatViewState
 import com.cotters.muzzchat.ui.viewmodel.MessageComposerState
@@ -61,30 +64,30 @@ class ChatViewModelTest {
     @Test
     fun `only nonblank drafts can be sent`() = runTest {
         for (draft in listOf("", "   ", "\n\t")) {
-            viewModel.onMessageChanged(draft)
-            viewModel.sendMessage()
+            viewModel.handleViewEvent(ComposeMessageChanged(draft))
+            viewModel.handleViewEvent(SendMessageTapped)
             assertFalse(composer.canSend)
             assertEquals(MessageComposerState(draft = draft), composer)
         }
         assertTrue(chatRepository.sentMessages.isEmpty())
 
-        viewModel.onMessageChanged("Hello")
+        viewModel.handleViewEvent(ComposeMessageChanged("Hello"))
         assertTrue(composer.canSend)
     }
 
     @Test
     fun `send trimmed message and reset composer when message sent successfully`() = runTest {
         chatRepository.sendResult = failure
-        viewModel.onMessageChanged("Failed message")
-        viewModel.sendMessage()
+        viewModel.handleViewEvent(ComposeMessageChanged("Failed message"))
+        viewModel.handleViewEvent(SendMessageTapped)
         assertEquals(MessageComposerState(draft = "Failed message", sendFailed = true), composer)
 
         chatRepository.sendResult = SendMessageResult.Success
         val gate = CompletableDeferred<Unit>()
         chatRepository.sendGate = gate
-        viewModel.onMessageChanged("Successful message\n ")
+        viewModel.handleViewEvent(ComposeMessageChanged("Successful message\n "))
         assertEquals(MessageComposerState(draft = "Successful message\n ", sendFailed = false), composer)
-        viewModel.sendMessage()
+        viewModel.handleViewEvent(SendMessageTapped)
         assertEquals(MessageComposerState(draft = "Successful message\n ", isSending = true), composer)
 
         gate.complete(Unit)
@@ -98,8 +101,8 @@ class ChatViewModelTest {
     @Test
     fun `preserve draft with error when message failed to send`() = runTest {
         chatRepository.sendResult = failure
-        viewModel.onMessageChanged(" Hello \n")
-        viewModel.sendMessage()
+        viewModel.handleViewEvent(ComposeMessageChanged(" Hello \n"))
+        viewModel.handleViewEvent(SendMessageTapped)
 
         assertEquals(listOf(SentMessage("Hello", "John", 1L)), chatRepository.sentMessages)
         assertEquals(MessageComposerState(draft = " Hello \n", sendFailed = true), composer)
@@ -110,10 +113,10 @@ class ChatViewModelTest {
     fun `reject edits and duplicate sends when message is sending`() = runTest {
         val gate = CompletableDeferred<Unit>()
         chatRepository.sendGate = gate
-        viewModel.onMessageChanged("Hello")
-        viewModel.sendMessage()
-        viewModel.onMessageChanged("Replacement")
-        viewModel.sendMessage()
+        viewModel.handleViewEvent(ComposeMessageChanged("Hello"))
+        viewModel.handleViewEvent(SendMessageTapped)
+        viewModel.handleViewEvent(ComposeMessageChanged("Replacement"))
+        viewModel.handleViewEvent(SendMessageTapped)
 
         assertEquals(MessageComposerState(draft = "Hello", isSending = true), composer)
         assertFalse(composer.canSend)
@@ -126,11 +129,11 @@ class ChatViewModelTest {
     @Test
     fun `clear error when editing message`() = runTest {
         chatRepository.sendResult = failure
-        viewModel.onMessageChanged("Hello")
-        viewModel.sendMessage()
+        viewModel.handleViewEvent(ComposeMessageChanged("Hello"))
+        viewModel.handleViewEvent(SendMessageTapped)
         assertEquals(MessageComposerState(draft = "Hello", sendFailed = true), composer)
 
-        viewModel.onMessageChanged("Try this instead")
+        viewModel.handleViewEvent(ComposeMessageChanged("Try this instead"))
         assertEquals(MessageComposerState(draft = "Try this instead", sendFailed = false), composer)
     }
 
@@ -138,8 +141,8 @@ class ChatViewModelTest {
     fun `preserve draft without failure when send is cancelled`() = runTest {
         val gate = CompletableDeferred<Unit>()
         chatRepository.sendGate = gate
-        viewModel.onMessageChanged("Hello")
-        viewModel.sendMessage()
+        viewModel.handleViewEvent(ComposeMessageChanged("Hello"))
+        viewModel.handleViewEvent(SendMessageTapped)
         gate.cancel(CancellationException("Send cancelled"))
 
         assertEquals(MessageComposerState(draft = "Hello"), composer)
@@ -149,9 +152,9 @@ class ChatViewModelTest {
     fun `switching user during send preserves captured sender`() = runTest {
         val gate = CompletableDeferred<Unit>()
         chatRepository.sendGate = gate
-        viewModel.onMessageChanged("Hello")
-        viewModel.sendMessage()
-        viewModel.switchUser()
+        viewModel.handleViewEvent(ComposeMessageChanged("Hello"))
+        viewModel.handleViewEvent(SendMessageTapped)
+        viewModel.handleViewEvent(SwitchUser)
         gate.complete(Unit)
 
         assertEquals(listOf(SentMessage("Hello", "John", 1L)), chatRepository.sentMessages)
@@ -167,7 +170,7 @@ class ChatViewModelTest {
             viewModel.viewState.value.getOnlyMessages(),
         )
 
-        viewModel.switchUser()
+        viewModel.handleViewEvent(SwitchUser)
         runCurrent()
         assertEquals(User.Sarah, viewModel.viewState.value.currentUser)
         assertFalse(viewModel.viewState.value.getOnlyMessages().last().isOutgoing)

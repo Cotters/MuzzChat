@@ -26,10 +26,7 @@ class MainActivity : ComponentActivity() {
                 MuzzApp(
                     viewState = viewState,
                     composerState = composerState,
-                    onSwitchUserTapped = viewModel::switchUser,
-                    onClearChatTapped = viewModel::onClearChatTapped,
-                    onMessageChanged = viewModel::onMessageChanged,
-                    onSendMessage = viewModel::sendMessage,
+                    onViewEvent = viewModel::handleViewEvent,
                 )
             }
         }
