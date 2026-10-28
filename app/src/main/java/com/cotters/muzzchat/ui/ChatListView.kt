@@ -6,15 +6,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -32,8 +36,16 @@ fun ChatListView(
     listItems: List<ChatListItem>,
     modifier: Modifier = Modifier,
 ) {
+    val listState = rememberLazyListState()
+    val latestMessage = (listItems.lastOrNull() as? ChatListItem.MessageBlock)
+        ?.messages
+        ?.lastOrNull()
+    LaunchedEffect(latestMessage) {
+        listState.requestScrollToItem(listItems.size)
+    }
     LazyColumn(
         modifier = modifier.background(MaterialTheme.colorScheme.surface),
+        state = listState,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         items(
@@ -60,6 +72,12 @@ fun ChatListView(
                     MessageBlock(item)
                 }
             }
+        }
+        item(
+            key = "CHAT_END_KEY",
+            contentType = "CHAT_END_KEY",
+        ) {
+            Spacer(Modifier.height(1.dp))
         }
     }
 }
