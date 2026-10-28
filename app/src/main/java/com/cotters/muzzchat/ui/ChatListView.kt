@@ -24,6 +24,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cotters.muzzchat.ui.theme.MuzzChatTheme
 import com.cotters.muzzchat.ui.viewmodel.ChatListItem
+import java.time.Duration
+import java.time.Instant
 
 @Composable
 fun ChatListView(
@@ -31,15 +33,15 @@ fun ChatListView(
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
-        modifier = modifier,
+        modifier = modifier.background(MaterialTheme.colorScheme.surface),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         items(
-            listItems,
+            items = listItems,
             key = { item ->
                 when (item) {
-                    is ChatListItem.TimeSeparator -> { "time_${item.timestamp}" }
-                    is ChatListItem.MessageBlock -> { "message_block_${item.messages.first().id}" }
+                    is ChatListItem.TimeSeparator -> "time_${item.timestamp}"
+                    is ChatListItem.MessageBlock -> "message_block_${item.messages.first().id}"
                 }
             },
             contentType = { item ->
@@ -53,6 +55,7 @@ fun ChatListView(
                 is ChatListItem.TimeSeparator -> {
                     TimeLabelSeparator(item)
                 }
+
                 is ChatListItem.MessageBlock -> {
                     MessageBlock(item)
                 }
@@ -63,9 +66,13 @@ fun ChatListView(
 
 @Composable
 private fun TimeLabelSeparator(item: ChatListItem.TimeSeparator) {
-    // TODO: Format within the mapper: weekday if within a week, otherwise date
     val context = LocalContext.current
-    val flags = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME
+    val age = Instant.now().toEpochMilli() - item.timestamp
+    val flags = if (age in 0L until DateUtils.WEEK_IN_MILLIS) {
+        DateUtils.FORMAT_SHOW_WEEKDAY or DateUtils.FORMAT_SHOW_TIME
+    } else {
+        DateUtils.FORMAT_SHOW_DATE
+    }
     Text(
         text = DateUtils.formatDateTime(context, item.timestamp, flags),
         modifier = Modifier
@@ -125,9 +132,25 @@ private fun MessageBubble(
 @Preview
 @Composable
 private fun ChatListViewPreview() {
+    val twoWeeksAgo = Instant.now().minus(Duration.ofDays(14)).toEpochMilli()
+    val twoDaysAgo = Instant.now().minus(Duration.ofDays(2)).toEpochMilli()
     MuzzChatTheme {
         ChatListView(
-            listItems = emptyList(),
+            listItems = listOf(
+                ChatListItem.TimeSeparator(timestamp = twoWeeksAgo),
+                ChatListItem.MessageBlock(
+                    messages = listOf(
+                        ChatViewMessage(0, "Long ago", "John", true, 1),
+                    )
+                ),
+                ChatListItem.TimeSeparator(timestamp = twoDaysAgo),
+                ChatListItem.MessageBlock(
+                    messages = listOf(
+                        ChatViewMessage(1, "More recent", "John", true, 1),
+                        ChatViewMessage(2, "A reply", "Sarah", false, 1),
+                    )
+                ),
+            ),
         )
     }
 }
