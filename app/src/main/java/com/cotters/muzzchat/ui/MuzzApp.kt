@@ -155,9 +155,10 @@ fun ComposeMessageView(
             OutlinedTextField(
                 value = state.draft,
                 onValueChange = onMessageChanged,
+                modifier = Modifier.weight(1f),
                 enabled = !state.isSending,
                 isError = state.sendFailed,
-                modifier = Modifier.weight(1f),
+                maxLines = 4,
             )
             Button(
                 onClick = onSendMessage,
