@@ -26,7 +26,10 @@ class UiMessageMapperTest {
                 ),
                 ChatListItem.TimeSeparator(timestamp = 1794075647000),
                 ChatListItem.MessageBlock(
-                    messages = uiMessages.slice(5..6)
+                    messages = uiMessages.slice(5..5)
+                ),
+                ChatListItem.MessageBlock(
+                    messages = uiMessages.slice(6..6)
                 ),
                 ChatListItem.MessageBlock(
                     messages = uiMessages.slice(7..7)

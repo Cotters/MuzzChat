@@ -3,10 +3,10 @@ package com.cotters.muzzchat.ui.viewmodel
 import com.cotters.muzzchat.domain.ChatMessage
 import com.cotters.muzzchat.ui.ChatViewMessage
 import kotlin.time.Duration.Companion.hours
-import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 object UiMessageMapper {
-    private val GROUP_GAP_MILLIS = 20.minutes.inWholeMilliseconds
+    private val GROUP_GAP_MILLIS = 20.seconds.inWholeMilliseconds
     private val TIME_SEPARATOR_GAP_MILLIS = 1.hours.inWholeMilliseconds
 
     fun buildChatListItems(messages: List<ChatMessage>, currentUserId: String): List<ChatListItem> = buildList {
@@ -17,7 +17,7 @@ object UiMessageMapper {
             if (previousMessage == null && lastOrNull() == null) {
                 add(ChatListItem.TimeSeparator(message.timestamp))
             }
-            if (previousMessage != null && (message.timestamp - previousMessage.timestamp > GROUP_GAP_MILLIS || previousMessage.senderId != message.senderId)) {
+            if (previousMessage != null && (message.timestamp - previousMessage.timestamp >= GROUP_GAP_MILLIS || previousMessage.senderId != message.senderId)) {
                 add(ChatListItem.MessageBlock(currentGroup.toList()))
                 currentGroup.clear()
             }
