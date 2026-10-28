@@ -62,13 +62,19 @@ fun TopAppBar(
                     text = {
                         Text("Switch User")
                     },
-                    onClick = onSwitchUserTapped,
+                    onClick = {
+                        isShowingDropdown = false
+                        onSwitchUserTapped()
+                    },
                 )
                 DropdownMenuItem(
                     text = {
                         Text("Clear Chat")
                     },
-                    onClick = onClearChatTapped,
+                    onClick = {
+                        isShowingDropdown = false
+                        onClearChatTapped()
+                    },
                 )
             }
         },
