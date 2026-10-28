@@ -179,8 +179,21 @@ fun ChatListView(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        // TODO: Add keys based on item type and last message in each block.
-        items(listItems) { item ->
+        items(
+            listItems,
+            key = { item ->
+                when (item) {
+                    is ChatListItem.TimeSeparator -> { "time_${item.timestamp}" }
+                    is ChatListItem.MessageBlock -> { "message_block_${item.messages.first().id}" }
+                }
+            },
+            contentType = { item ->
+                when (item) {
+                    is ChatListItem.TimeSeparator -> "time_separator"
+                    is ChatListItem.MessageBlock -> "message_block"
+                }
+            }
+        ) { item ->
             when (item) {
                 is ChatListItem.TimeSeparator -> {
                     // TODO: Format within the mapper: weekday if within a week, otherwise date
