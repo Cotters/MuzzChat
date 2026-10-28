@@ -62,6 +62,7 @@ private fun ComposeMessageViewPreview() {
     MuzzChatTheme {
         ComposeMessageView(
             state = MessageComposerState(
+                draft = "Preview message",
                 sendFailed = true,
             ),
             onMessageChanged = {},
