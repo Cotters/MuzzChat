@@ -1,4 +1,4 @@
-package com.cotters.muzzchat.ui
+package com.cotters.muzzchat.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

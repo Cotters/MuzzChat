@@ -1,6 +1,7 @@
-package com.cotters.muzzchat.ui
+package com.cotters.muzzchat.ui.viewmodel
 
 import com.cotters.muzzchat.domain.ChatMessage
+import com.cotters.muzzchat.ui.ChatViewMessage
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 

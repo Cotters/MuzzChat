@@ -1,6 +1,8 @@
 package com.cotters.muzzchat.ui
 
 import com.cotters.muzzchat.domain.ChatMessage
+import com.cotters.muzzchat.ui.viewmodel.ChatListItem
+import com.cotters.muzzchat.ui.viewmodel.UiMessageMapper
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

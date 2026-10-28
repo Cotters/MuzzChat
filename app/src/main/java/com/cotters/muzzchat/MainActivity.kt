@@ -7,11 +7,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.cotters.muzzchat.ui.ChatViewModel
-import com.cotters.muzzchat.ui.ChatViewState
-import com.cotters.muzzchat.ui.MessageComposerState
 import com.cotters.muzzchat.ui.MuzzApp
 import com.cotters.muzzchat.ui.theme.MuzzChatTheme
+import com.cotters.muzzchat.ui.viewmodel.ChatViewModel
+import com.cotters.muzzchat.ui.viewmodel.ChatViewState
+import com.cotters.muzzchat.ui.viewmodel.MessageComposerState
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
