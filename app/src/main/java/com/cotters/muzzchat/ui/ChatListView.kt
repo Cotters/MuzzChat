@@ -3,7 +3,6 @@ package com.cotters.muzzchat.ui
 import android.text.format.DateUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,8 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -111,6 +110,12 @@ private fun ChatListMessageItemView(message: ChatViewMessage) {
         MaterialTheme.colorScheme.surfaceContainerHigh
     val textColor = if (message.isOutgoing) MaterialTheme.colorScheme.onPrimaryContainer else
         MaterialTheme.colorScheme.onSurface
+    val shape = RoundedCornerShape(
+        topStart = 16.dp,
+        topEnd = 16.dp,
+        bottomEnd = if (message.isOutgoing) 0.dp else 16.dp,
+        bottomStart = if (message.isOutgoing) 16.dp else 0.dp,
+    )
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = arrangement
@@ -119,6 +124,7 @@ private fun ChatListMessageItemView(message: ChatViewMessage) {
             content = message.content,
             backgroundColor = backgroundColor,
             textColor = textColor,
+            shape = shape
         )
     }
 }
@@ -128,16 +134,16 @@ private fun MessageBubble(
     content: String,
     backgroundColor: Color,
     textColor: Color,
+    shape: Shape,
 ) {
-    Box(
+    Text(
+        text = content,
+        color = textColor,
         modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(color = backgroundColor)
-            .padding(8.dp)
             .widthIn(max = 300.dp)
-    ) {
-        Text(content, modifier = Modifier.padding(4.dp), color = textColor)
-    }
+            .background(backgroundColor, shape)
+            .padding(12.dp),
+    )
 }
 
 @Preview
