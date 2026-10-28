@@ -54,6 +54,7 @@ fun MuzzApp(
                 state = composerState,
                 onMessageChanged = { onViewEvent(ChatViewEvent.ComposeMessageChanged(it)) },
                 onSendMessage = { onViewEvent(ChatViewEvent.SendMessageTapped) },
+                modifier = Modifier.padding(top = 8.dp, bottom = 12.dp)
             )
         }
     }
